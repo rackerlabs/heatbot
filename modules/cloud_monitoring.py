@@ -125,7 +125,7 @@ def get_state_changes(alerts, bot):
                 state = '\x0308WARNING\x03'
             elif alarm['state'] == 'CRITICAL':
                 state = '\x0304CRITICAL\x03'
-            out = 'Cloud Monitoring: {} {} on {} {}'.format(
+            out = '[Cloud Monitoring]: {} {} on {} {}'.format(
                   alarm['check_label'],
                   alarm['label'],
                   alarm['entity_label'],
