@@ -132,11 +132,3 @@ def get_state_changes(alerts, bot):
                   state)
             if bot.config.cloud_monitoring.channel in bot.channels:
                 bot.msg(bot.config.cloud_monitoring.channel, out)
-
-
-def get_duration(td):
-    days = td.days
-    hours = (td.days * 86400 - td.seconds)/3600
-    minutes = ((td.days * 86400 + hours * 3600) - td.seconds)
-    seconds = ((td.days * 86400 + hours * 3600 + minutes * 60) - td.seconds)
-    return '{} days {:02d}:{:02d}:{:02d}'.format(days, hours, minutes, seconds)
