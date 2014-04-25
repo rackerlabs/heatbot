@@ -25,7 +25,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import pyrax
+import requests
 import time
 import willie
 from datetime import datetime, timedelta
@@ -34,36 +34,24 @@ from datetime import datetime, timedelta
 @willie.module.commands('alerts')
 def alerts(bot, trigger):
     '''Output a list of active Cloud Monitoring alerts'''
-    username = bot.config.cloud_monitoring.username
-    api_key = bot.config.cloud_monitoring.api_key
-    pyrax.set_setting("identity_type", "rackspace")
-    pyrax.set_credentials(username, api_key)
-    cm = pyrax.cloud_monitoring
+    alarms = get_alarms(bot)
 
-    view = cm.get_overview()
-    alerts = get_alerts(view, bot)
-    active_alerts = [alert for alert in alerts if alert['state'] != 'OK']
-    bot.say('Active Cloud Monitoring alerts: {}'.format(len(active_alerts)))
-    for alert in active_alerts:
-        last_change = datetime.fromtimestamp(alert['timestamp'] / 1000)
-        if alert['state'] == 'WARNING':
+    bot.say('Active Cloud Monitoring alerts: {}'.format(len(alarms)))
+    for alarm in alarms:
+        if alarm['state'] == 'WARNING':
             state = '\x0308WARNING\x03'
-        elif alert['state'] == 'CRITICAL':
+        elif alarm['state'] == 'CRITICAL':
             state = '\x0304CRITICAL\x03'
-        out = '{} - {} {} {} since {}'.format(alert['entity_label'],
-                                              alert['check_label'],
-                                              alert['label'], state,
-                                              last_change.strftime('%c'))
+        out = '{} - {} {} {} since {}'.format(alarm['hostname'],
+                                              state,
+                                              alarm['check'],
+                                              alarm['status'],
+                                              alarm['timestamp'])
         bot.say(out)
 
 
 @willie.module.interval(30)
 def check_cloud_monitoring(bot):
-    username = bot.config.cloud_monitoring.username
-    api_key = bot.config.cloud_monitoring.api_key
-    pyrax.set_setting("identity_type", "rackspace")
-    pyrax.set_credentials(username, api_key)
-
     if not bot.memory.contains('cloud_monitoring'):
         bot.memory['cloud_monitoring'] = {
             'OK': [],
@@ -71,40 +59,24 @@ def check_cloud_monitoring(bot):
             'CRITICAL': []
         }
 
-    cm = pyrax.cloud_monitoring
-    view = cm.get_overview()
-    alerts = get_alerts(view, bot)
+    alarms = get_alarms(bot)
     get_state_changes(alerts, bot)
     update_alarms(alerts, bot)
 
 
-def get_alerts(view, bot):
-    alerts = []
-    for item in view['values']:
-        for alarm_state in item['latest_alarm_states']:
-            alarm_label = (alarm['label'] for alarm in item['alarms']
-                           if alarm['id'] == alarm_state['alarm_id']).next()
-            check_label = (check['label'] for check in item['checks']
-                           if check['id'] == alarm_state['check_id']).next()
-            alerts.append({
-                'id': alarm_state['alarm_id'],
-                'label': alarm_label,
-                'state': alarm_state['state'],
-                'timestamp': alarm_state['timestamp'],
-                'check_label': check_label,
-                'entity_label': item['entity']['label']
-            })
-
-    return alerts
+def get_alarms(bot):
+    response = requests.get(bot.config.cloud_monitoring.dash_url)
+    alarms = response.json()
+    return alarms['alarms']
 
 
 def update_alarms(alerts, bot):
     states = bot.memory['cloud_monitoring']
-    states['OK'] = [alarm['id'] for alarm in alerts
+    states['OK'] = [alarm['_id']['$oid'] for alarm in alerts
                     if alarm['state'] == 'OK']
-    states['WARNING'] = [alarm['id'] for alarm in alerts
+    states['WARNING'] = [alarm['_id']['$oid'] for alarm in alerts
                          if alarm['state'] == 'WARNING']
-    states['CRITICAL'] = [alarm['id'] for alarm in alerts
+    states['CRITICAL'] = [alarm['_id']['$oid'] for alarm in alerts
                           if alarm['state'] == 'CRITICAL']
 
 
@@ -116,7 +88,7 @@ def get_state_changes(alerts, bot):
         first_run = False
 
     for alarm in alerts:
-        if alarm['id'] not in states[alarm['state']]:
+        if alarm['_id']['$oid'] not in states[alarm['state']]:
             if alarm['state'] == 'OK':
                 if first_run:
                     continue
@@ -125,10 +97,9 @@ def get_state_changes(alerts, bot):
                 state = '\x0308WARNING\x03'
             elif alarm['state'] == 'CRITICAL':
                 state = '\x0304CRITICAL\x03'
-            out = '[Cloud Monitoring]: {} {} on {} {}'.format(
-                  alarm['check_label'],
-                  alarm['label'],
-                  alarm['entity_label'],
-                  state)
+            out = '[Cloud Monitoring] {} {} {} {}'.format(alarm['hostname'],
+                                                          alarm['state'],
+                                                          alarm['check'],
+                                                          alarm['status'])
             if bot.config.cloud_monitoring.channel in bot.channels:
                 bot.msg(bot.config.cloud_monitoring.channel, out)
