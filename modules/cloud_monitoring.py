@@ -65,7 +65,9 @@ def check_cloud_monitoring(bot):
 
 
 def get_alarms(bot):
-    response = requests.get(bot.config.cloud_monitoring.dash_url)
+    cafile = bot.config.cloud_monitoring.cafile
+    response = requests.get(bot.config.cloud_monitoring.dash_url,
+                            verify=cafile)
     alarms = response.json()
     return alarms['alarms']
 
