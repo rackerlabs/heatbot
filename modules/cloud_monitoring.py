@@ -98,9 +98,9 @@ def get_state_changes(alarms, bot):
                 state = '\x0308WARNING\x03'
             elif alarm['state'] == 'CRITICAL':
                 state = '\x0304CRITICAL\x03'
-            out = '[Cloud Monitoring] {} {} {} {}'.format(alarm['hostname'],
-                                                          alarm['state'],
-                                                          alarm['check'],
-                                                          alarm['status'])
+            out = '[Cloud Monitoring] {} {} {} - {}'.format(alarm['hostname'],
+                                                            alarm['state'],
+                                                            alarm['check'],
+                                                            alarm['status'])
             if bot.config.cloud_monitoring.channel in bot.channels:
                 bot.msg(bot.config.cloud_monitoring.channel, out)
