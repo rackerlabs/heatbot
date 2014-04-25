@@ -31,12 +31,12 @@ import willie
 from datetime import datetime, timedelta
 
 
-@willie.module.commands('alerts')
-def alerts(bot, trigger):
-    '''Output a list of active Cloud Monitoring alerts'''
+@willie.module.commands('alarms')
+def alarms(bot, trigger):
+    '''Output a list of active Cloud Monitoring alarms'''
     alarms = get_alarms(bot)
 
-    bot.say('Active Cloud Monitoring alerts: {}'.format(len(alarms)))
+    bot.say('Active Cloud Monitoring alarms: {}'.format(len(alarms)))
     for alarm in alarms:
         if alarm['state'] == 'WARNING':
             state = '\x0308WARNING\x03'
@@ -60,8 +60,8 @@ def check_cloud_monitoring(bot):
         }
 
     alarms = get_alarms(bot)
-    get_state_changes(alerts, bot)
-    update_alarms(alerts, bot)
+    get_state_changes(alarms, bot)
+    update_alarms(alarms, bot)
 
 
 def get_alarms(bot):
@@ -71,24 +71,24 @@ def get_alarms(bot):
     return alarms['alarms']
 
 
-def update_alarms(alerts, bot):
+def update_alarms(alarms, bot):
     states = bot.memory['cloud_monitoring']
-    states['OK'] = [alarm['_id']['$oid'] for alarm in alerts
+    states['OK'] = [alarm['_id']['$oid'] for alarm in alarms
                     if alarm['state'] == 'OK']
-    states['WARNING'] = [alarm['_id']['$oid'] for alarm in alerts
+    states['WARNING'] = [alarm['_id']['$oid'] for alarm in alarms
                          if alarm['state'] == 'WARNING']
-    states['CRITICAL'] = [alarm['_id']['$oid'] for alarm in alerts
+    states['CRITICAL'] = [alarm['_id']['$oid'] for alarm in alarms
                           if alarm['state'] == 'CRITICAL']
 
 
-def get_state_changes(alerts, bot):
+def get_state_changes(alarms, bot):
     states = bot.memory['cloud_monitoring']
     if len(states['OK']) == 0:
         first_run = True
     else:
         first_run = False
 
-    for alarm in alerts:
+    for alarm in alarms:
         if alarm['_id']['$oid'] not in states[alarm['state']]:
             if alarm['state'] == 'OK':
                 if first_run:
