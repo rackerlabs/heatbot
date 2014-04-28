@@ -37,11 +37,9 @@ def alarms(bot, trigger):
     response = requests.get(bot.config.cloud_monitoring.dash_url,
                             verify=False)
     alarms = response.json()
-
-    bot.say('Active Cloud Monitoring alarms: {}'.format(len(alarms['alarms'])))
-    for alarm in alarms['alarms']:
-        if alarm['state'] == 'OK':
-            continue
+    active_alarms = [alarm for alarm in alarms['alarms'] if alarm['state'] != 'OK']
+    bot.say('Active Cloud Monitoring Alarms: {}'.format(len(active_alarms)))
+    for alarm in active_alarms:
         if alarm['state'] == 'WARNING':
             state = '\x0308WARNING\x03'
         elif alarm['state'] == 'CRITICAL':
