@@ -41,7 +41,7 @@ def alarms(bot, trigger):
     bot.say('Active Cloud Monitoring alarms: {}'.format(len(alarms['alarms'])))
     for alarm in alarms['alarms']:
         if alarm['state'] == 'OK':
-            next
+            continue
         if alarm['state'] == 'WARNING':
             state = '\x0308WARNING\x03'
         elif alarm['state'] == 'CRITICAL':
