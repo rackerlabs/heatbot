@@ -34,10 +34,12 @@ from datetime import datetime, timedelta
 @willie.module.commands('alarms')
 def alarms(bot, trigger):
     '''Output a list of active Cloud Monitoring alarms'''
-    alarms = get_alarms(bot)
+    warning = bot.memory['cloud_monitoring']['WARNING']
+    critical = bot.memory['cloud_monitoring']['CRITICAL']
+    all_alarms = warning + critical
 
-    bot.say('Active Cloud Monitoring alarms: {}'.format(len(alarms)))
-    for alarm in alarms:
+    bot.say('Active Cloud Monitoring alarms: {}'.format(len(all_alarms)))
+    for alarm in all_alarms:
         if alarm['state'] == 'WARNING':
             state = '\x0308WARNING\x03'
         elif alarm['state'] == 'CRITICAL':
