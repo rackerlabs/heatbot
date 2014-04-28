@@ -34,6 +34,8 @@ from datetime import datetime, timedelta
 @willie.module.commands('alarms')
 def alarms(bot, trigger):
     '''Output a list of active Cloud Monitoring alarms'''
+    if bot.memory['cloud_monitoring'] is None:
+        bot.memory['cloud_monitoring'] = {'WARNING': [], 'CRITICAL': []}
     warning = bot.memory['cloud_monitoring']['WARNING']
     critical = bot.memory['cloud_monitoring']['CRITICAL']
     all_alarms = warning + critical
