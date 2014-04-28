@@ -38,8 +38,8 @@ def alarms(bot, trigger):
                             verify=False)
     alarms = response.json()
 
-    bot.say('Active Cloud Monitoring alarms: {}'.format(len(all_alarms)))
-    for alarm in all_alarms:
+    bot.say('Active Cloud Monitoring alarms: {}'.format(len(alarms['alarms'])))
+    for alarm in alarms['alarms']:
         if alarm['state'] == 'OK':
             next
         if alarm['state'] == 'WARNING':
