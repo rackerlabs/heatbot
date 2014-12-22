@@ -26,6 +26,7 @@ limitations under the License.
 
 import json
 import willie
+import time
 from keystoneclient.v2_0.client import Client as keystone_client
 from heatclient.client import Client as heat_client
 
@@ -49,6 +50,71 @@ ENDPOINTS = {
     'dev': 'api.dev.rs-heat.com',
     'fusion.dev': 'fusion.dev.rs-heat.com'
 }
+
+
+class HeatCheck(object):
+    def __init__(self, username, password, tenant, auth_url, heat_url,
+                 region=None):
+        self.username = username
+        self.password = password
+        self.tenant = tenant
+        self.auth_url = auth_url
+        self.heat_url = heat_url
+        self.region = region
+        self.stack_list = []
+
+        keystone = keystone_client(username=self.username,
+                                   password=self.password,
+                                   tenant_name=self.tenant,
+                                   auth_url=self.auth_url)
+        self.token = keystone.auth_token
+        self.heat = heat_client('1', endpoint=self.heat_url,
+                                region_name=self.region, token=self.token,
+                                insecure=True)
+
+    def build_info_time(self):
+        try:
+            start = time.time()
+            build_info = self.heat.build_info.build_info()
+            return time.time() - start
+        except BaseException, e:
+            print(e)
+            return None
+
+    def stack_list_time(self):
+        try:
+            start = time.time()
+            self.stack_list = list(self.heat.stacks.list())
+            return time.time() - start
+        except BaseException, e:
+            print(e)
+            return None
+
+    def stack_show_time(self):
+        try:
+            if len(self.stack_list) > 0:
+                start = time.time()
+                stack_show = self.heat.stacks.get(self.stack_list[0].id)
+                return time.time() - start
+            return None
+        except BaseException, e:
+            print(e)
+            return None
+
+    def stack_preview_time(self, template_url, parameters=None):
+        if parameters:
+            kwargs = {'stack_name': 'test', 'template_url': template_url,
+                      'parameters': parameters}
+        else:
+            kwargs = {'stack_name': 'test', 'template_url': template_url}
+
+        try:
+            start = time.time()
+            stack = self.heat.stacks.preview(**kwargs)
+            return time.time() - start
+        except BaseException, e:
+            print(e)
+            return None
 
 
 @willie.module.commands('build-info')
@@ -103,3 +169,33 @@ def heat_endpoints(bot, trigger):
     for key, value in ENDPOINTS.iteritems():
         bot.msg(trigger.nick, '{name:{width}s} {fqdn}'.format(name=key,
                 fqdn=value, width=width))
+
+
+@willie.module.commands('health')
+def health(bot, trigger):
+    '''Do some health checks on an endpoint'''
+    username = bot.config.heatmon.username
+    password = bot.config.heatmon.password
+    tenant_name = bot.config.heatmon.tenant_name
+    auth_url = bot.config.heatmon.auth_url
+    endpoint_label = trigger.group(2)
+
+    if endpoint_label is None:
+        bot.say("Please give me an endpoint to get build-info from. See "
+                ".heat-endpoints for a list.")
+        return
+
+    if endpoint_label not in ENDPOINTS:
+        bot.say("{} isn't an endpoint name I recognize. See a list at "
+                ".heat-endpoints".format(endpoint_label))
+        return
+
+    heat_url = 'https://{}/v1/{}'.format(ENDPOINTS[endpoint_label],
+                                         bot.config.heat.tenant_name)
+
+    heat_check = HeatCheck(username, password, tenant_name, auth_url, heat_url)
+    bi_time = heat_check.build_info_time()
+    sl_time = heat_check.stack_list_time()
+    ss_time = heat_check.stack_show_time()
+    bot.say('build-info: {:.2}s  stack-list: {:.2}s  stack-show: {:.2}s'.format(bi_time,
+            sl_time, ss_time))
