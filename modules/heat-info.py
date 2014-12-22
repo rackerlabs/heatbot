@@ -174,10 +174,10 @@ def heat_endpoints(bot, trigger):
 @willie.module.commands('health')
 def health(bot, trigger):
     '''Do some health checks on an endpoint'''
-    username = bot.config.heatmon.username
-    password = bot.config.heatmon.password
-    tenant_name = bot.config.heatmon.tenant_name
-    auth_url = bot.config.heatmon.auth_url
+    username = bot.config.heat.username
+    password = bot.config.heat.password
+    tenant_name = bot.config.heat.tenant_name
+    auth_url = bot.config.heat.auth_url
     endpoint_label = trigger.group(2)
 
     if endpoint_label is None:
