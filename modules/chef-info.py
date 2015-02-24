@@ -32,7 +32,11 @@ def active(bot, trigger):
     if env_name is None:
         bot.say('Please give me a chef environment')
         return
-    api = chef.autoconfigure()
+    url = bot.config.chef.url
+    key = bot.config.chef.key
+    username = bot.config.chef.username
+    api = chef.ChefAPI(url, key, username)
+    api.set_default()
     envs = chef.Environment.list().names
     if env_name not in envs:
         bot.say("{} isn't an environment I recognize".format(env_name))
@@ -48,7 +52,11 @@ def active(bot, trigger):
 @willie.module.commands('environments')
 def environments(bot, trigger):
     '''Display a list of chef environments'''
-    api = chef.autoconfigure()
+    url = bot.config.chef.url
+    key = bot.config.chef.key
+    username = bot.config.chef.username
+    api = chef.ChefAPI(url, key, username)
+    api.set_default()
     envs = chef.Environment.list().names
     bot.say('Chef environments: {}'.format(', '.join(
             chef.Environment.list().names)))
@@ -61,5 +69,11 @@ def chef_noop(bot, trigger):
     if env_name is None:
         bot.say('Please give me a chef environment')
         return
-    api = chef.autoconfigure()
+    url = bot.config.chef.url
+    key = bot.config.chef.key
+    username = bot.config.chef.username
+    api = chef.ChefAPI(url, key, username)
+    api.set_default()
     env = chef.Environment(env_name)
+    noop = env.default_attributes['base']['noop']
+    bot.say('The following nodes have noop set: {}'.format(', '.join(noop)))
