@@ -127,36 +127,47 @@ def build_info(bot, trigger):
     password = bot.config.heat.password
     tenant_name = bot.config.heat.tenant_name
     auth_url = bot.config.heat.auth_url
-    endpoint_label = trigger.group(2)
+    endpoint_input = trigger.group(2)
+    endpoints_list = []
+    regions = ['syd', 'iad', 'dfw', 'lon', 'ord', 'hkg']
 
-    if endpoint_label is None:
+    if endpoint_input is None:
         bot.say("Please give me an endpoint to get build-info from. See "
                 ".heat-endpoints for a list.")
         return
-
-    if endpoint_label not in ENDPOINTS:
+    elif endpoint_input == 'all':
+        endpoints_list = [endpoint for endpoint in ENDPOINTS]
+    elif endpoint_input == 'active':
+        endpoints_list = regions
+    elif endpoint_input == 'inactive'
+        endpoints_list = ['inactive.'+ endpoint for region in regions]
+    if endpoint_input not in ENDPOINTS:
         bot.say("{} isn't an endpoint name I recognize. See a list at "
-                ".heat-endpoints".format(endpoint_label))
+                ".heat-endpoints".format(endpoint_input))
         return
 
     keystone = keystone_client(username=username, password=password,
                                tenant_name=tenant_name, auth_url=auth_url)
     token = keystone.auth_token
-    full_endpoint = 'https://{}/v1/{}'.format(ENDPOINTS[endpoint_label],
-                                              bot.config.heat.tenant_name)
-    heat = heat_client('1', endpoint=full_endpoint, insecure=True, token=token)
 
-    build_info = heat.build_info.build_info()
-    api_revision = build_info['api']['revision']
-    engine_revision = build_info['engine']['revision']
-    if 'fusion-api' in build_info:
-        fusion_revision = build_info['fusion-api']['revision']
-    else:
-        fusion_revision = 'None'
+    for endpoint_label in endpoints_list:
+        full_endpoint = 'https://{}/v1/{}'.format(ENDPOINTS[endpoint_label],
+                                                  bot.config.heat.tenant_name)
+        heat = heat_client('1', endpoint=full_endpoint, insecure=True, token=token)
 
-    bot.say('api: {}  engine: {}  fusion: {}'.format(api_revision,
-            engine_revision, fusion_revision))
+        build_info = heat.build_info.build_info()
+        api_revision = build_info['api']['revision']
+        engine_revision = build_info['engine']['revision']
+        if 'fusion-api' in build_info:
+            fusion_revision = build_info['fusion-api']['revision']
+        else:
+            fusion_revision = 'None'
 
+        bot.say('{}: api: {}  engine: {}  fusion: {}'.format(
+                endpoint_label,
+                api_revision,
+                engine_revision,
+                fusion_revision))
 
 @willie.module.commands('heat-endpoints')
 def heat_endpoints(bot, trigger):
