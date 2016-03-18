@@ -129,7 +129,7 @@ def build_info(bot, trigger):
     auth_url = bot.config.heat.auth_url
     endpoint_input = trigger.group(2)
     endpoints_list = []
-    regions = ['syd', 'iad', 'dfw', 'lon', 'ord', 'hkg']
+    regions = ['dfw', 'iad', 'ord', 'lon', 'syd', 'hkg']
 
     if endpoint_input is None:
         bot.say("Please give me an endpoint to get build-info from. See "

@@ -50,7 +50,7 @@ def active(bot, trigger):
         elif 'production-'+ env_input in env_names:
             envs = ['production-' + env_input]
         else:
-            bot.say("{} isn't an environment I recognize".format(env_name))
+            bot.say("{} isn't an environment I recognize".format(env_input))
             return
     for environment in env_names:
         env = chef.Environment(environment)
