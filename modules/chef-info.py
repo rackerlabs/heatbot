@@ -52,7 +52,8 @@ def active(bot, trigger):
         else:
             bot.say("{} isn't an environment I recognize".format(env_input))
             return
-    for environment in env_names:
+
+    for environment in sorted(env_names):
         env = chef.Environment(environment)
         if 'active_set' in env.default_attributes['heat']:
             bot.say('{}: Current active set is {}'.format(

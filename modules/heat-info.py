@@ -150,7 +150,7 @@ def build_info(bot, trigger):
                                tenant_name=tenant_name, auth_url=auth_url)
     token = keystone.auth_token
 
-    for endpoint_label in endpoints_list:
+    for endpoint_label in sorted(endpoints_list):
         full_endpoint = 'https://{}/v1/{}'.format(ENDPOINTS[endpoint_label],
                                                   bot.config.heat.tenant_name)
         heat = heat_client('1', endpoint=full_endpoint, insecure=True, token=token)
