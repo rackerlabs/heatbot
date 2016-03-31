@@ -28,8 +28,8 @@ import chef
 @willie.module.commands('active')
 def active(bot, trigger):
     '''Display the current active set for an environment'''
-    env_name = trigger.group(2)
-    if env_name is None:
+    env_input = trigger.group(2)
+    if env_input is None:
         bot.say('Please give me a chef environment')
         return
     url = bot.config.chef.url
@@ -37,17 +37,30 @@ def active(bot, trigger):
     username = bot.config.chef.username
     api = chef.ChefAPI(url, key, username)
     api.set_default()
-    envs = chef.Environment.list().names
-    if env_name not in envs:
-        bot.say("{} isn't an environment I recognize".format(env_name))
-        return
-    env = chef.Environment(env_name)
-    if 'active_set' in env.default_attributes['heat']:
-        bot.say('Current active set is {}'.format(
-                env.default_attributes['heat']['active_set'].upper()))
+    env_names = chef.Environment.list().names
+    envs = []
+    if env_input == 'prod' or env_input == 'production':
+        #Select all production environments
+        envs = [ env for env in env_names if 'production-' in env ]
+    elif env_input == 'all':
+        envs = env_names
     else:
-        bot.say('There is no active set for {}'.format(env_name))
+        if env_input in env_names:
+            envs = [env_input]
+        elif 'production-'+ env_input in env_names:
+            envs = ['production-' + env_input]
+        else:
+            bot.say("{} isn't an environment I recognize".format(env_input))
+            return
 
+    for environment in sorted(env_names):
+        env = chef.Environment(environment)
+        if 'active_set' in env.default_attributes['heat']:
+            bot.say('{}: Current active set is {}'.format(
+                    environment,
+                    env.default_attributes['heat']['active_set'].upper()))
+        else:
+            bot.say('There is no active set for {}'.format(environment))
 
 @willie.module.commands('environments')
 def environments(bot, trigger):
