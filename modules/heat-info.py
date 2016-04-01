@@ -139,9 +139,9 @@ def build_info(bot, trigger):
         endpoints_list = [endpoint for endpoint in ENDPOINTS]
     elif endpoint_input == 'active':
         endpoints_list = regions
-    elif endpoint_input == 'inactive'
-        endpoints_list = ['inactive.'+ endpoint for region in regions]
-    if endpoint_input not in ENDPOINTS:
+    elif endpoint_input == 'inactive':
+        endpoints_list = ['inactive.' + region for region in regions]
+    elif endpoint_input not in ENDPOINTS:
         bot.say("{} isn't an endpoint name I recognize. See a list at "
                 ".heat-endpoints".format(endpoint_input))
         return
