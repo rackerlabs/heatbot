@@ -128,7 +128,6 @@ def build_info(bot, trigger):
     tenant_name = bot.config.heat.tenant_name
     auth_url = bot.config.heat.auth_url
     endpoint_input = trigger.group(2)
-    endpoints_list = []
     regions = ['dfw', 'iad', 'ord', 'lon', 'syd', 'hkg']
 
     if endpoint_input is None:
@@ -141,7 +140,9 @@ def build_info(bot, trigger):
         endpoints_list = regions
     elif endpoint_input == 'inactive':
         endpoints_list = ['inactive.' + region for region in regions]
-    elif endpoint_input not in ENDPOINTS:
+    elif endpoint_input in ENDPOINTS:
+        endpoints_list = [endpoint_input]
+    else:
         bot.say("{} isn't an endpoint name I recognize. See a list at "
                 ".heat-endpoints".format(endpoint_input))
         return
