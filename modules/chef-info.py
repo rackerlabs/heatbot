@@ -21,11 +21,11 @@ limitations under the License.
 """
 
 import pyrax
-import willie
+import sopel
 import chef
 
 
-@willie.module.commands('active')
+@sopel.module.commands('active')
 def active(bot, trigger):
     '''Display the current active set for an environment'''
     env_input = trigger.group(2)
@@ -61,7 +61,7 @@ def active(bot, trigger):
         else:
             bot.say('There is no active set for {}'.format(env_name))
 
-@willie.module.commands('environments')
+@sopel.module.commands('environments')
 def environments(bot, trigger):
     '''Display a list of chef environments'''
     url = bot.config.chef.url
@@ -74,7 +74,7 @@ def environments(bot, trigger):
             chef.Environment.list().names)))
 
 
-@willie.module.commands('chef_noop')
+@sopel.module.commands('chef_noop')
 def chef_noop(bot, trigger):
     '''Display a list of noop hosts in a chef environment'''
     env_name = trigger.group(2)

@@ -2,7 +2,7 @@
 cloud_monitoring.py - A Rackspace Cloud Monitoring module
 
 Usage:
-In the willie config, you will need to add a cloud_monitoring section
+In the sopel config, you will need to add a cloud_monitoring section
 
 [cloud_monitoring]
 username = <Rackspace username>
@@ -27,11 +27,11 @@ limitations under the License.
 
 import requests
 import time
-import willie
+import sopel
 from datetime import datetime, timedelta
 
 
-@willie.module.commands('alarms')
+@sopel.module.commands('alarms')
 def alarms(bot, trigger):
     '''Output a list of active Cloud Monitoring alarms'''
     response = requests.get(bot.config.cloud_monitoring.dash_url,
@@ -52,7 +52,7 @@ def alarms(bot, trigger):
         bot.say(out)
 
 
-@willie.module.interval(30)
+@sopel.module.interval(30)
 def check_cloud_monitoring(bot):
     if not bot.memory.contains('cloud_monitoring'):
         bot.memory['cloud_monitoring'] = {

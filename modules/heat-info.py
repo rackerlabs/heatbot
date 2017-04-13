@@ -25,7 +25,7 @@ limitations under the License.
 """
 
 import json
-import willie
+import sopel
 import time
 from keystoneclient.v2_0.client import Client as keystone_client
 from heatclient.client import Client as heat_client
@@ -117,8 +117,8 @@ class HeatCheck(object):
             return None
 
 
-@willie.module.commands('build-info')
-@willie.module.example('.build-info staging', 'api: 2014.i3-20140414-666  '
+@sopel.module.commands('build-info')
+@sopel.module.example('.build-info staging', 'api: 2014.i3-20140414-666  '
                        'engine: 2014.i3-20140414-666  fusion: '
                        'i3-20140411-11938a1-6')
 def build_info(bot, trigger):
@@ -170,7 +170,7 @@ def build_info(bot, trigger):
                 engine_revision,
                 fusion_revision))
 
-@willie.module.commands('heat-endpoints')
+@sopel.module.commands('heat-endpoints')
 def heat_endpoints(bot, trigger):
     '''Display all of the heat endpoints I'm aware of'''
     if not trigger.is_privmsg:
@@ -183,7 +183,7 @@ def heat_endpoints(bot, trigger):
                 fqdn=value, width=width))
 
 
-@willie.module.commands('health')
+@sopel.module.commands('health')
 def health(bot, trigger):
     '''Do some health checks on an endpoint'''
     username = bot.config.heat.username

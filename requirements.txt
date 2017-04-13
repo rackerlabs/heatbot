@@ -1,4 +1,4 @@
 backports.ssl-match-hostname
 pyrax
-willie
+sopel
 -e git+git@github.com:openstack/python-heatclient.git#egg=python-heatclient
